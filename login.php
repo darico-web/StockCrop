@@ -44,6 +44,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit"])) {
                 // Farmer login always goes to the dashboard
                 header("Location: farmerDashboard.php");
                 exit();
+            } elseif ($user["roleId"] == 1) {
+                // Admin login always goes to the dashboard
+                header("Location: adminDashboard.php");
+                exit();
             } elseif ($user["roleId"] == 3) { 
                 // CUSTOMER LOGIN FLOW
 

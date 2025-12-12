@@ -556,7 +556,7 @@ mysqli_stmt_close($stmt);
                 <input type="date" class="form-control" id="endDate" name="end_date" required>
             </div>
             <p class="text-muted small">
-                Submitting this form will load and **automatically print** orders within the selected date range.
+                Submitting this form will load and automatically print orders within the selected date range.
             </p>
         </div>
         <div class="modal-footer">

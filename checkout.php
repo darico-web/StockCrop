@@ -226,7 +226,7 @@ if ($user_id) {
 </head>
 <body>
     <?php include 'navbar.php';?> 
-    <div class="container py-5">
+    <div class="container py-5 mb-4">
         <h1 class="display-6 mb-5 fw-bold">Secure Checkout</h1>
 
         <div class="row">
@@ -239,12 +239,12 @@ if ($user_id) {
                         <?php if ($is_logged_in): ?>
                             <div class="alert alert-success">
                                 <span class="material-symbols-outlined align-middle me-2">check_circle</span>
-                                You are logged in as **<?= htmlspecialchars($_SESSION['firstName']) ?>**.
+                                You are logged in as <?= htmlspecialchars($_SESSION['firstName']) ?>.
                                 <a href="logout.php" class="alert-link">Log out?</a>
                             </div>
                         <?php else: ?>
                             <p class="mb-3">
-                                Please **Log In** to proceed with your order, or **Register** if you are a new customer.
+                                Please Log In to proceed with your order, or Register if you are a new customer.
                             </p>
                             
                             <a href="login.php?redirect=checkout.php" class="btn btn-primary me-2">Log In to Continue</a>
@@ -267,7 +267,7 @@ if ($user_id) {
                                         Doorstep Delivery (Flat Rate)
                                     </label>
                                     <small class="d-block text-muted ms-4">
-                                        **StockCrop Logistics Partner** delivers to your address. **Cost: J$500.00**
+                                        StockCrop Logistics Partner delivers to your address. Cost: J$500.00
                                     </small>
                                 </div>
 
@@ -277,7 +277,7 @@ if ($user_id) {
                                         Customer Pickup
                                     </label>
                                     <small class="d-block text-muted ms-4">
-                                        Collect from the designated **StockCrop Sorting Hub. **Cost: Free**
+                                        Collect from the designated StockCrop Sorting Hub. Cost: Free
                                     </small>
                                 </div>
                                 
@@ -291,7 +291,7 @@ if ($user_id) {
                                 <div id="addressFields">
                                     <div class="alert alert-info py-2" id="pickupMessage" style="display:block;">
                                         <span class="material-symbols-outlined align-middle me-2">storefront</span>
-                                        You will receive the **Pickup Location and Time Slot** upon order confirmation.
+                                        You will receive the Pickup Location and Time Slot upon order confirmation.
                                     </div>
 
                                     <div class="mb-3">
@@ -320,7 +320,7 @@ if ($user_id) {
                                 <div class="form-check mb-3">
                                     <input class="form-check-input" type="radio" name="paymentMethod" id="paymentCOD" value="COD" required onchange="togglePlaceOrderButton()">
                                     <label class="form-check-label" for="paymentCOD">
-                                        Cash on Delivery (COD) / Cash on Pickup
+                                        Cash on Delivery / Cash on Pickup
                                     </label>
                                     <small class="text-muted d-block ms-4">Pay in cash when your order is delivered or picked up.</small>
                                 </div>
@@ -372,6 +372,8 @@ if ($user_id) {
             </div>
         </div>
     </div>
+
+    <?php include 'footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 

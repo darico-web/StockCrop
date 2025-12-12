@@ -14,8 +14,10 @@
     if (isset($_SESSION['roleId'])) {
         if ($_SESSION['roleId'] == 2) {
             header("Location: farmerDashboard.php");
+        } elseif ($_SESSION['roleId'] == 3) {
+            header("Location: customerDashboard.php");
         } elseif ($_SESSION['roleId'] == 1) {
-            header("Location: customerHome.php");
+            header("Location: adminDashboard.php");
         } else {
             header("Location: login.php");
         }

@@ -9,6 +9,63 @@ if (!isset($_SESSION['id'])) {
 
 $userId = $_SESSION['id'];
 
+// Get the customerId for the logged-in user
+$stmt = mysqli_prepare($conn, "SELECT id AS customerId, firstName, lastName, phoneNumber, address1, address2, parish FROM customers WHERE userId=?");
+mysqli_stmt_bind_param($stmt, "i", $userId);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$customer = mysqli_fetch_assoc($result);
+$customerId = $customer['customerId'] ?? 0;
+$firstName = htmlspecialchars($customer['firstName'] ?? 'Customer');
+$lastName = htmlspecialchars($customer['lastName'] ?? '');
+$fullName = $firstName . ' ' . $lastName;
+$phone = htmlspecialchars($customer['phoneNumber'] ?? 'N/A');
+$address = implode(', ', array_filter([
+    htmlspecialchars($customer['address1'] ?? ''),
+    htmlspecialchars($customer['address2'] ?? ''),
+    htmlspecialchars($customer['parish'] ?? '')
+]));
+mysqli_stmt_close($stmt);
+
+// Fetch user email from users table
+$stmt = mysqli_prepare($conn, "SELECT email FROM users WHERE id=?");
+mysqli_stmt_bind_param($stmt, "i", $userId);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$user = mysqli_fetch_assoc($result);
+$email = htmlspecialchars($user['email'] ?? 'N/A');
+mysqli_stmt_close($stmt);
+
+// Fetch latest 5 notifications for this customer
+$stmt = mysqli_prepare($conn, "SELECT * FROM notifications WHERE userId=? ORDER BY created_at DESC LIMIT 5");
+mysqli_stmt_bind_param($stmt, "i", $customerId);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$notifications = mysqli_fetch_all($result, MYSQLI_ASSOC);
+mysqli_stmt_close($stmt);
+
+// Count unread notifications
+$stmt = mysqli_prepare($conn, "SELECT COUNT(*) AS unreadCount FROM notifications WHERE userId=? AND isRead=0");
+mysqli_stmt_bind_param($stmt, "i", $customerId);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$row = mysqli_fetch_assoc($result);
+$unreadCount = $row['unreadCount'] ?? 0;
+mysqli_stmt_close($stmt);
+
+// Fetch customer orders
+$orderQuery = mysqli_prepare($conn, "SELECT id, orderDate, totalAmount, status FROM orders WHERE customerId=? ORDER BY orderDate DESC");
+mysqli_stmt_bind_param($orderQuery, "i", $customerId);
+mysqli_stmt_execute($orderQuery);
+$ordersResult = mysqli_stmt_get_result($orderQuery);
+$orders = mysqli_fetch_all($ordersResult, MYSQLI_ASSOC);
+mysqli_stmt_close($orderQuery);
+
+$totalOrders = count($orders);
+$inProgressOrders = count(array_filter($orders, fn($o) => $o['status'] !== 'Delivered'));
+$latestOrder = $orders[0]['orderDate'] ?? null;
+
+
 // Fetch user info from users + customers
 $query = mysqli_prepare($conn, "
     SELECT u.email, c.id AS customerId, c.firstName, c.lastName, c.phoneNumber, c.address1, c.address2, c.parish
@@ -103,6 +160,31 @@ body { background-color: var(--bs-background-light); }
         </div>
     </div>
 </div>
+
+<div class="dropdown ms-auto">
+    <button class="btn btn-secondary position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-bell"></i>Notifications <!-- Bootstrap bell icon -->
+        <?php if($unreadCount > 0): ?>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            <?= $unreadCount ?>
+        </span>
+        <?php endif; ?>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="notificationDropdown" style="min-width: 300px;">
+        <?php if(empty($notifications)): ?>
+            <li class="text-center text-muted">No notifications</li>
+        <?php else: ?>
+            <?php foreach($notifications as $note): ?>
+            <li class="dropdown-item <?= $note['isRead'] == 0 ? 'fw-bold' : '' ?>">
+                <?= htmlspecialchars($note['message']) ?><br>
+                <small class="text-muted"><?= date('M d, Y H:i', strtotime($note['created_at'])) ?></small>
+            </li>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </ul>
+</div>
+
+
 
 <div class="container py-5">
     <ul class="nav nav-tabs mb-4 border-0" id="dashboardTabs" role="tablist">
@@ -255,5 +337,27 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<script>
+document.getElementById('notificationDropdown').addEventListener('click', () => {
+    fetch('markRead.php')
+        .then(res => res.text())
+        .then(console.log);
+});
+</script>
+<script>
+setInterval(() => {
+    fetch('fetchUnreadCount.php')
+        .then(res => res.json())
+        .then(data => {
+            const badge = document.querySelector('.badge');
+            if(badge){
+                badge.textContent = data.unread;
+                badge.style.display = data.unread > 0 ? 'inline-block' : 'none';
+            }
+        });
+}, 5000);
+</script>
+
 </body>
 </html>
