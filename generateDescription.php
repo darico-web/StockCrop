@@ -20,8 +20,13 @@ $category = trim($_POST['category']);
 
 // --- 2. Configuration & Prompt ---
 $model = 'gemini-2.5-flash';
+<<<<<<< HEAD
 //Gemini API Key !!!
 $apiKey = 'AIzaSyAbssvcn6p33GC6u224uv3LMKVUeijeM6s'; 
+=======
+//Gemini API Key
+$apiKey = 'gemini api key goes here'; 
+>>>>>>> 8409061d2de25e7c7aea8ea202f0fc7acd47f869
 // NOTE: A more detailed prompt helps avoid safety blocks
 $prompt = "You are a professional, concise product catalog writer. Write a factual and objective 3-4 sentence (maximum 400 words) description for the item '$productName' in the fresh produce category '$category'. Focus only on the fresh quality, great taste, and local origin.";
 
