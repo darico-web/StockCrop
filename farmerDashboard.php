@@ -2,6 +2,8 @@
 include 'session.php';
 include 'config.php';
 
+$farmerId = $_SESSION['farmerId'];
+
 redirectIfNotLoggedIn();
 
 if ($_SESSION['roleId'] != 2) {
@@ -208,6 +210,39 @@ body { font-family: 'Roboto', sans-serif; background-color: var(--sc-background)
                 <a href="addProduct.php" class="btn btn-success mt-2">Add Listing</a>
             </div>
         </div>
+
+        <!-- QR Code Section -->
+<div class="row mb-5">
+    <div class="col-md-6">
+        <div class="card p-4 text-center">
+            <h5>Your Unique Farm QR Code</h5>
+            <p class="text-muted small">
+                Customers can scan this to view your farm profile.
+            </p>
+
+            <?php
+            $qrUrl = "http://localhost/stockcrop/viewFarmer.php?id=" . $farmerId;
+            ?>
+
+            <img 
+                src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=<?php echo urlencode($qrUrl); ?>" 
+                alt="QR Code"
+                class="mb-3"
+            >
+
+            <br>
+
+            <a 
+                href="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=<?php echo urlencode($qrUrl); ?>"
+                download="Farm_QR_<?php echo $farmerId; ?>.png"
+                class="btn btn-success"
+            >
+                Download QR Code
+            </a>
+        </div>
+    </div>
+</div>
+
         <div class="col-lg-4 col-md-6 col-sm-12">
             <div class="card card-dash p-4 text-center">
                 <span class="material-icons-outlined mx-auto mb-3" style="font-size:3rem; color:#007bff;">storage</span>
