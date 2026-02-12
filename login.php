@@ -39,11 +39,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit"])) {
             $_SESSION["roleId"] = $user["roleId"];
 
 
-            // 3. Redirect based on role
-            if ($user["roleId"] == 2) {
-                // Farmer login always goes to the dashboard
-                header("Location: farmerDashboard.php");
-                exit();
+         // 3. Redirect based on role
+
+         if ($user["roleId"] == 2) {
+
+            // Get farmer data using userId
+            $farmer_query = mysqli_prepare($conn, 
+                "SELECT farmerId, businessName FROM farmers WHERE userId = ?");
+            mysqli_stmt_bind_param($farmer_query, "i", $user["id"]);
+            mysqli_stmt_execute($farmer_query);
+            $farmer_result = mysqli_stmt_get_result($farmer_query);
+        
+            if ($farmer_row = mysqli_fetch_assoc($farmer_result)) {
+                $_SESSION['farmerId'] = $farmer_row['farmerId'];
+                $_SESSION['businessName'] = $farmer_row['businessName'];
+            }
+        
+            mysqli_stmt_close($farmer_query);
+        
+            header("Location: farmerDashboard.php");
+            exit();
+        }
             } elseif ($user["roleId"] == 1) {
                 // Admin login always goes to the dashboard
                 header("Location: adminDashboard.php");
