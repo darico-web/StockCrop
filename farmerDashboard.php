@@ -28,6 +28,32 @@ if (!$farmerData) {
 
 $farmerId = $farmerData['id'];
 
+
+// NEW ORDERS FOR FARMER
+
+$newOrdersStmt = mysqli_prepare($conn, "
+    SELECT 
+        o.id AS orderId,
+        o.orderDate,
+        c.firstName,
+        c.lastName,
+        SUM(oi.lineTotal) AS orderTotal
+    FROM orders o
+    JOIN order_items oi ON o.id = oi.orderId
+    JOIN customers c ON o.customerId = c.id
+    WHERE oi.farmerId = ?
+      AND oi.status = 'Pending'
+    GROUP BY o.id
+    ORDER BY o.orderDate DESC
+    LIMIT 5
+");
+
+mysqli_stmt_bind_param($newOrdersStmt, "i", $farmerId);
+mysqli_stmt_execute($newOrdersStmt);
+$newOrdersResult = mysqli_stmt_get_result($newOrdersStmt);
+$newOrders = mysqli_fetch_all($newOrdersResult, MYSQLI_ASSOC);
+mysqli_stmt_close($newOrdersStmt);
+
 // Total Revenue
 $revenueQuery = mysqli_prepare($conn, "
     SELECT SUM(lineTotal) AS revenue
@@ -153,6 +179,52 @@ body { font-family: 'Roboto', sans-serif; background-color: var(--sc-background)
 
     <!-- Stats Cards -->
     <div class="row g-4 mb-5">
+        
+    <!-- Recent Orders Panel -->
+        
+<h4 class="mb-4 fw-bold text-dark">Recent Orders</h4>
+
+<div class="row g-4 mb-5">
+    <div class="col-lg-12">
+        <div class="card card-dash p-4">
+            <h5 class="fw-bold mb-3">🆕 New Pending Orders</h5>
+
+            <?php if (empty($newOrders)): ?>
+                <p class="text-muted mb-0">No new orders at the moment.</p>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($newOrders as $order): ?>
+                                <tr>
+                                    <td>#<?= $order['orderId']; ?></td>
+                                    <td><?= htmlspecialchars($order['firstName'].' '.$order['lastName']); ?></td>
+                                    <td><?= date('M d, Y', strtotime($order['orderDate'])); ?></td>
+                                    <td>$<?= number_format($order['orderTotal'], 2); ?> JMD</td>
+                                    <td>
+                                        <a href="viewOrders.php?id=<?= $order['orderId']; ?>" 
+                                           class="btn btn-sm btn-outline-success">
+                                            View
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
         <!-- Total Revenue -->
         <div class="col-lg-4 col-md-6 col-sm-12">
             <div class="card card-dash p-3">
