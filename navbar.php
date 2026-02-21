@@ -85,6 +85,56 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     <?php endif; ?>
                 </a>
 
+<?php if ($is_logged_in && $user_role_id == 2): // Only for farmers ?>
+    <?php
+    // Get farmer ID from session
+    $farmerId = $_SESSION['farmerId'] ?? null;
+    $newOrders = [];
+    if ($farmerId) {
+        $stmt = mysqli_prepare($conn, "
+            SELECT o.id AS orderId, c.firstName, c.lastName
+            FROM order_items oi
+            JOIN orders o ON oi.orderId = o.id
+            JOIN customers c ON o.customerId = c.id
+            WHERE oi.farmerId = ? AND oi.status = 'Pending'
+            ORDER BY o.orderDate DESC
+            LIMIT 5
+        ");
+        mysqli_stmt_bind_param($stmt, "i", $farmerId);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $newOrders = mysqli_fetch_all($result, MYSQLI_ASSOC);
+        mysqli_stmt_close($stmt);
+    }
+    $newOrdersCount = count($newOrders);
+    ?>
+
+    <div class="dropdown ms-2">
+        <button class="btn btn-outline-secondary position-relative" type="button" id="notificationsDropdown" 
+                data-bs-toggle="dropdown" aria-expanded="false" style="width:42px; height:42px; border-radius:50%;">
+            <span class="material-symbols-outlined">notifications</span>
+            <?php if($newOrdersCount > 0): ?>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    <?= $newOrdersCount ?>
+                    <span class="visually-hidden">unread notifications</span>
+                </span>
+            <?php endif; ?>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown" style="min-width:250px;">
+            <?php if(empty($newOrders)): ?>
+                <li class="dropdown-item text-muted">No new orders</li>
+            <?php else: ?>
+                <?php foreach($newOrders as $order): ?>
+                    <li class="dropdown-item">
+                        Order #<?= $order['orderId']; ?> from <?= htmlspecialchars($order['firstName'].' '.$order['lastName']); ?>
+                    </li>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </ul>
+    </div>
+<?php endif; ?>
+                
+
                 <?php if ($is_logged_in): ?>
                     <div class="dropdown">
                         <button style="background-color: #E57373;" class="btn d-flex align-items-center text-white fw-semibold px-3 py-2 rounded-pill dropdown-toggle" 
